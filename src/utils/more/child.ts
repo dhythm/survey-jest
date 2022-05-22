@@ -1,0 +1,1 @@
+export const getChildName = () => "John";

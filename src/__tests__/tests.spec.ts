@@ -2,6 +2,9 @@ import { getNow } from "..";
 import baz, { bar, foo } from "../foo-bar-baz";
 import { toUpperCase } from "../utils";
 import { toUpperCase as toUpperCaseOrg } from "../utils/converter";
+import { getGrandchildName } from "../utils/more";
+import { getChildName } from "../utils/more/child";
+import { awakeChild, awakeGrandchild } from "../utils/parent";
 
 describe("getNow", () => {
   it("fix time by using spyOn", () => {
@@ -48,5 +51,28 @@ describe("converter", () => {
   });
   it("original function should NOT be mocked", () => {
     expect(toUpperCaseOrg("hello, world")).toBe("HELLO, WORLD");
+  });
+});
+
+jest.mock("../utils/more");
+// jest.mock("../utils/more/child");
+const mockedGetChildName = getChildName as jest.MockedFunction<
+  typeof getChildName
+>;
+const mockedGetGrandchildName = getGrandchildName as jest.MockedFunction<
+  typeof getGrandchildName
+>;
+
+describe("parent", () => {
+  /**
+   * The following implementation will get `TypeError: mockedGetChildName.mockImplementation is not a function`,
+   * because parent import not from `utils/more` but `utils/more/child` directly.
+   * So, `../utils/more/child` should be mocked if you want to mock getChildName at this case.
+   */
+  // mockedGetChildName.mockImplementation(() => "Taro");
+  mockedGetGrandchildName.mockImplementation(() => "Jiro");
+  it("child should be mocked", () => {
+    expect(awakeChild()).toBe("Wake up, John!");
+    expect(awakeGrandchild()).toBe("Wake up, Jiro!");
   });
 });
